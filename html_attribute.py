@@ -173,9 +173,12 @@ class AttributePostprocessor(postprocessors.Postprocessor):
     def _remove_md(self, url):
         # サイト内絶対パスで末尾に .md があった場合、取り除く
         # （github のプレビューとの互換性のため）
+        # その後、指定があればその拡張子を追加する
         matched = re.match('([^#]*)\.md(#.*)?$', url)
         if matched:
             url = matched.group(1)
+            if self.config['extension']:
+                url = url + self.config['extension']
             anchor = matched.group(2)
             if anchor is not None:
                 url = url + anchor
@@ -246,6 +249,7 @@ class AttributeExtension(markdown.Extension):
             'base_url' : [None, "Base URL used to link URL as absolute URL"],
             'base_path' : [None, "Base Path used to link URL as relative URL"],
             'full_path' : [None, "Full Path used to link URL as anchor URL"],
+            'extension' : ['', "URL extension"],
         }
 
         # ユーザ設定で上書き
