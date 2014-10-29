@@ -222,7 +222,14 @@ class AttributePostprocessor(postprocessors.Postprocessor):
 
     def run(self, text):
         text = '<{tag}>{text}</{tag}>'.format(tag=self._markdown.doc_tag, text=text)
-        root = etree.fromstring(text.encode('utf-8'))
+        try:
+            root = etree.fromstring(text.encode('utf-8'))
+        except etree.ParseError, e:
+            lineno = e.position[0]
+            xs = text.split('\n')[lineno - 5:lineno + 5]
+            for x, n in zip(xs, range(lineno - 5, lineno + 5)):
+                print u'{0:5d} {1}'.format(n + 1, x)
+            raise
         self._iterate(root, self._add_color_code)
         self._iterate(root, self._add_border_table)
         self._iterate(root, self._to_absolute_url)
