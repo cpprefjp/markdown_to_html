@@ -34,18 +34,18 @@ from __future__ import absolute_import
 import re
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from markdown.util import Processor
 from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
 
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
-QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)[ ]*\n(?P<code>.*?)(?<=\n)\s*(?P=fence)[ ]*\n(\n|(?P<qualifies>.*?\n\s*\n))', re.MULTILINE|re.DOTALL)
+QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)[ ]*\n(?P<code>.*?)(?<=\n)\s*(?P=fence)[ ]*\n(\n|(?P<qualifies>.*?\n\s*\n))', re.MULTILINE | re.DOTALL)
 QUALIFY_RE = re.compile(r'^\* +(?P<target>.*?)(?P<commands>(\[.*?\])*)$')
 QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
 
 
 class QualifiedFencedCodeExtension(Extension):
+
     def extendMarkdown(self, md, md_globals):
         fenced_block = QualifiedFencedBlockPreprocessor(md)
         md.registerExtension(self)
@@ -61,16 +61,18 @@ def _make_random_string():
     alphabets = string.ascii_letters
     return ''.join(alphabets[randrange(len(alphabets))] for i in xrange(32))
 
+
 class QualifyDictionary(object):
+
     def __init__(self):
         # 各コマンドに対する実際の処理
         def _qualify_italic(*xs):
             return '<i>{0}</i>'.format(*xs)
+
         def _qualify_color(*xs):
             return '<span style="color:#{1}">{0}</span>'.format(*xs)
+
         def _qualify_link(*xs):
-            text = xs[0]
-            url = xs[1]
             return '<a href="{1}">{0}</a>'.format(*xs)
 
         self.qualify_dic = {
@@ -79,27 +81,33 @@ class QualifyDictionary(object):
             'link': _qualify_link,
         }
 
+
 class Qualifier(object):
+
     """修飾１個分のデータを保持するクラス
     """
+
     def __init__(self, line, qdic):
         command_res = [r'(\[{cmd}(\]|.*?\]))'.format(cmd=cmd) for cmd in qdic.qualify_dic]
 
         qualify_re_str = r'^\* +(?P<target>.*?)(?P<commands>({commands})+)$'.format(
-                            commands='|'.join(command_res))
+            commands='|'.join(command_res))
         qualify_re = re.compile(qualify_re_str)
 
         # parsing
         m = qualify_re.search(line)
         if not m:
-            raise ValueError, 'Failed parse'
+            raise ValueError('Failed parse')
         self.target = m.group('target')
         self.commands = []
+
         def f(match):
             self.commands.append(match.group(1))
         QUALIFY_COMMAND_RE.sub(f, m.group('commands'))
 
+
 class QualifierList(object):
+
     def __init__(self, lines):
         self._qdic = QualifyDictionary()
 
@@ -110,7 +118,6 @@ class QualifierList(object):
             except:
                 return None
         self._qs = filter(None, [ignore(Qualifier, v, self._qdic) for v in lines])
-
 
     def mark(self, code):
         """置換対象になる単語にマーキングを施す
@@ -132,7 +139,8 @@ class QualifierList(object):
         # 対象となる単語を置換し、その置換された文字列を後で辿るための正規表現（text_re_list）と、
         # 置換された文字列に対してどのような修飾を行えばいいかという辞書（match_qualifier）を作る。
         text_re_list = []
-        match_qualifier = { }
+        match_qualifier = {}
+
         def mark_command(match):
             # 各置換毎に一意な文字列を用意する
             match_name = _make_random_string()
@@ -169,7 +177,7 @@ class QualifierList(object):
 
         # マークされた文字列を探しだして、そのマークに対応した修飾を行う
         def convert(match):
-            m,q = ((m,q) for m,q in self._match_qualifier.iteritems() if match.group(m)).next()
+            m, q = ((m, q) for m, q in self._match_qualifier.iteritems() if match.group(m)).next()
             text = match.group(m)
             for command in q.commands:
                 xs = command.split(' ')
@@ -179,6 +187,7 @@ class QualifierList(object):
                 text = self._qdic.qualify_dic[c](text, *remain)
             return text
         return self._code_re.sub(convert, html)
+
 
 class QualifiedFencedBlockPreprocessor(Preprocessor):
 
@@ -211,13 +220,14 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
                 # If config is not empty, then the codehighlite extension
                 # is enabled, so we call it to highlite the code
                 if self.codehilite_conf and m.group('lang'):
-                    highliter = CodeHilite(code,
-                            linenums=self.codehilite_conf['linenums'][0],
-                            guess_lang=self.codehilite_conf['guess_lang'][0],
-                            css_class=self.codehilite_conf['css_class'][0],
-                            style=self.codehilite_conf['pygments_style'][0],
-                            lang=(m.group('lang') or None),
-                            noclasses=self.codehilite_conf['noclasses'][0])
+                    highliter = CodeHilite(
+                        code,
+                        linenums=self.codehilite_conf['linenums'][0],
+                        guess_lang=self.codehilite_conf['guess_lang'][0],
+                        css_class=self.codehilite_conf['css_class'][0],
+                        style=self.codehilite_conf['pygments_style'][0],
+                        lang=(m.group('lang') or None),
+                        noclasses=self.codehilite_conf['noclasses'][0])
 
                     code = highliter.hilite()
                 else:
@@ -230,7 +240,7 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
                 code = qualifier_list.qualify(code)
 
                 placeholder = self.markdown.htmlStash.store(code, safe=True)
-                text = '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
+                text = '%s\n%s\n%s' % (text[:m.start()], placeholder, text[m.end():])
             else:
                 break
         return text.split("\n")

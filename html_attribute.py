@@ -120,7 +120,9 @@ HTML_TAGS = {
     'menu',
 }
 
+
 class SafeRawHtmlPostprocessor(postprocessors.Postprocessor):
+
     def run(self, text):
         for i in range(self.markdown.htmlStash.html_counter):
             html, safe = self.markdown.htmlStash.rawHtmlBlocks[i]
@@ -147,7 +149,9 @@ class SafeRawHtmlPostprocessor(postprocessors.Postprocessor):
         html = html.replace('>', '&gt;')
         return html.replace('"', '&quot;')
 
+
 class AttributePostprocessor(postprocessors.Postprocessor):
+
     def __init__(self, md):
         postprocessors.Postprocessor.__init__(self, md)
         self._markdown = md
@@ -185,7 +189,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         return url
 
     def _to_absolute_url(self, element):
-        if element.tag == 'a' and element.attrib.has_key('href'):
+        if element.tag == 'a' and 'href' in element.attrib:
             base_url = self.config['base_url'].strip('/')
             base_paths = self.config['base_path'].strip('/').split('/')
             full_path = self.config['full_path']
@@ -237,11 +241,11 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         output = self._markdown.serializer(root)
         if self._markdown.stripTopLevelTags:
             try:
-                start = output.index('<%s>'%self._markdown.doc_tag)+len(self._markdown.doc_tag)+2
-                end = output.rindex('</%s>'%self._markdown.doc_tag)
+                start = output.index('<%s>' % self._markdown.doc_tag) + len(self._markdown.doc_tag) + 2
+                end = output.rindex('</%s>' % self._markdown.doc_tag)
                 output = output[start:end].strip()
             except ValueError:
-                if output.strip().endswith('<%s />'%self._markdown.doc_tag):
+                if output.strip().endswith('<%s />' % self._markdown.doc_tag):
                     # We have an empty document
                     output = ''
                 else:
@@ -249,14 +253,16 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                     raise ValueError('Markdown failed to strip top-level tags. Document=%r' % output.strip())
         return output
 
+
 class AttributeExtension(markdown.Extension):
+
     def __init__(self, configs):
         # デフォルトの設定
         self.config = {
-            'base_url' : [None, "Base URL used to link URL as absolute URL"],
-            'base_path' : [None, "Base Path used to link URL as relative URL"],
-            'full_path' : [None, "Full Path used to link URL as anchor URL"],
-            'extension' : ['', "URL extension"],
+            'base_url': [None, "Base URL used to link URL as absolute URL"],
+            'base_path': [None, "Base Path used to link URL as relative URL"],
+            'full_path': [None, "Full Path used to link URL as anchor URL"],
+            'extension': ['', "URL extension"],
         }
 
         # ユーザ設定で上書き
@@ -268,6 +274,7 @@ class AttributeExtension(markdown.Extension):
         attr.config = self.getConfigs()
         md.postprocessors.add('html_attribute', attr, '_end')
         md.postprocessors['raw_html'] = SafeRawHtmlPostprocessor(md)
+
 
 def makeExtension(configs):
     return AttributeExtension(configs)

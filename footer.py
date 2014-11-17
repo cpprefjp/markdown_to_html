@@ -2,13 +2,15 @@
 import markdown
 from markdown.util import etree
 
+
 class FooterExtension(markdown.Extension):
+
     """ Footer Extension. """
 
     def __init__(self, configs):
         # デフォルトの設定
         self.config = {
-            'url' : [None, 'URL'],
+            'url': [None, 'URL'],
         }
 
         # ユーザ設定で上書き
@@ -21,7 +23,9 @@ class FooterExtension(markdown.Extension):
         md.registerExtension(self)
         md.treeprocessors.add('footer', footer, '_begin')
 
+
 class FooterTreeprocessor(markdown.treeprocessors.Treeprocessor):
+
     """ Build and append footnote div to end of document. """
 
     def _make_footer(self):
@@ -34,6 +38,7 @@ class FooterTreeprocessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root):
         footer = self._make_footer()
         root.append(footer)
+
 
 def makeExtension(configs=[]):
     return FooterExtension(configs=configs)
