@@ -234,7 +234,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
             for x, n in zip(xs, range(lineno - 5, lineno + 5)):
                 print u'{0:5d} {1}'.format(n + 1, x)
             raise
-        self._iterate(root, self._add_color_code)
+        #self._iterate(root, self._add_color_code)
         self._iterate(root, self._add_border_table)
         self._iterate(root, self._to_absolute_url)
 
