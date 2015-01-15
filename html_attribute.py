@@ -5,6 +5,7 @@ markdown から変換した HTML に属性を追加する
 """
 
 import re
+import sys
 from markdown.util import etree
 from markdown import postprocessors
 import markdown
@@ -194,6 +195,8 @@ class AttributePostprocessor(postprocessors.Postprocessor):
             base_paths = self.config['base_path'].strip('/').split('/')
             full_path = self.config['full_path']
 
+            check_href = None
+
             url = element.attrib['href']
             if url.startswith('http://') or url.startswith('https://'):
                 # 絶対パス
@@ -202,13 +205,17 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                 # 別ドメインの場合は別タブで開く
                 if not url_body.startswith(base_url_body):
                     element.attrib['target'] = '_blank'
+                else:
+                    check_href = url_body[len(base_url_body):]
             elif url.startswith('/'):
                 # サイト内絶対パス
                 element.attrib['href'] = base_url + url
                 element.attrib['href'] = self._remove_md(element.attrib['href'])
+                check_href = self._remove_md(url)
             elif url.startswith('#'):
                 # ページ内リンク
                 element.attrib['href'] = base_url + '/' + self._remove_md(full_path) + url
+                check_href = '/' + self._remove_md(full_path)
             else:
                 # サイト内相対パス
                 paths = []
@@ -223,6 +230,31 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                         paths.append(p)
                 element.attrib['href'] = base_url + '/' + '/'.join(paths)
                 element.attrib['href'] = self._remove_md(element.attrib['href'])
+                check_href = self._remove_md('/' + '/'.join(paths))
+
+            if (hasattr(self._markdown, '_html_attribute_hrefs') and
+                self._markdown._html_attribute_hrefs is not None):
+                # パスの存在チェック
+                if check_href is not None:
+                    check_href = re.sub('#.*', '', check_href)
+                    if check_href.endswith('.nolink'):
+                        # そのうち作られるはずだけど、まだリンク先のファイルが存在していないケース
+                        if self._remove_md(check_href.replace('.nolink', '')) in self._markdown._html_attribute_hrefs:
+                            # .nolink マークされていたけど、実際はもうこのファイルは作られているっぽいケース
+                            # .nolink を外すこと
+                            sys.stderr.write('Warning: [nolinked {full_path}] href "{url} ({check_href})" found.\n'.format(**locals()))
+                            element.tag = 'span'
+                        else:
+                            # このファイルを作るように促す
+                            check_href = check_href.replace('.nolink', '')
+                            sys.stdout.write('Note: You can create {check_href} for {full_path}.\n'.format(**locals()))
+                            element.tag = 'span'
+                    else:
+                        # .nolink でない、普通のファイル
+                        if check_href not in self._markdown._html_attribute_hrefs:
+                            sys.stderr.write('Warning: [{full_path}] href "{url} ({check_href})" not found.\n'.format(**locals()))
+                            element.tag = 'span'
+
 
     def run(self, text):
         text = '<{tag}>{text}</{tag}>'.format(tag=self._markdown.doc_tag, text=text)
