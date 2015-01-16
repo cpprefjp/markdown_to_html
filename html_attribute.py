@@ -216,6 +216,9 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                 # ページ内リンク
                 element.attrib['href'] = base_url + '/' + self._remove_md(full_path) + url
                 check_href = '/' + self._remove_md(full_path)
+            elif url.startswith('mailto:'):
+                # メール
+                pass
             else:
                 # サイト内相対パス
                 paths = []
@@ -233,7 +236,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                 check_href = self._remove_md('/' + '/'.join(paths))
 
             if (hasattr(self._markdown, '_html_attribute_hrefs') and
-                self._markdown._html_attribute_hrefs is not None):
+               self._markdown._html_attribute_hrefs is not None):
                 # パスの存在チェック
                 if check_href is not None:
                     check_href = re.sub('#.*', '', check_href)
@@ -242,19 +245,18 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                         if self._remove_md(check_href.replace('.nolink', '')) in self._markdown._html_attribute_hrefs:
                             # .nolink マークされていたけど、実際はもうこのファイルは作られているっぽいケース
                             # .nolink を外すこと
-                            sys.stderr.write('Warning: [nolinked {full_path}] href "{url} ({check_href})" found.\n'.format(**locals()))
+                            sys.stderr.write('Warning: [nolinked {full_path}] href "{url} ({check_href})" found.\n'.format(**locals()).encode('utf-8'))
                             element.tag = 'span'
                         else:
                             # このファイルを作るように促す
                             check_href = check_href.replace('.nolink', '')
-                            sys.stdout.write('Note: You can create {check_href} for {full_path}.\n'.format(**locals()))
+                            sys.stdout.write('Note: You can create {check_href} for {full_path}.\n'.format(**locals()).encode('utf-8'))
                             element.tag = 'span'
                     else:
                         # .nolink でない、普通のファイル
                         if check_href not in self._markdown._html_attribute_hrefs:
-                            sys.stderr.write('Warning: [{full_path}] href "{url} ({check_href})" not found.\n'.format(**locals()))
+                            sys.stderr.write('Warning: [{full_path}] href "{url} ({check_href})" not found.\n'.format(**locals()).encode('utf-8'))
                             element.tag = 'span'
-
 
     def run(self, text):
         text = '<{tag}>{text}</{tag}>'.format(tag=self._markdown.doc_tag, text=text)
