@@ -258,6 +258,16 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                             sys.stderr.write('Warning: [{full_path}] href "{url} ({check_href})" not found.\n'.format(**locals()).encode('utf-8'))
                             element.tag = 'span'
 
+    def _add_meta(self, element):
+        body = etree.Element('div', itemprop="articleBody")
+        for e in list(element):
+            if e.tag == 'h1':
+                e.attrib['itemprop'] = 'name'
+            else:
+                body.append(e)
+                element.remove(e)
+        element.append(body)
+
     def run(self, text):
         text = '<{tag}>{text}</{tag}>'.format(tag=self._markdown.doc_tag, text=text)
         try:
@@ -271,6 +281,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         #self._iterate(root, self._add_color_code)
         self._iterate(root, self._add_border_table)
         self._iterate(root, self._to_absolute_url)
+        self._add_meta(root)
 
         output = self._markdown.serializer(root)
         if self._markdown.stripTopLevelTags:
