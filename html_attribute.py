@@ -260,10 +260,12 @@ class AttributePostprocessor(postprocessors.Postprocessor):
 
     def _add_meta(self, element):
         body = etree.Element('div', itemprop="articleBody")
+        after_h1 = False
         for e in list(element):
             if e.tag == 'h1':
                 e.attrib['itemprop'] = 'name'
-            else:
+                after_h1 = True
+            elif after_h1:
                 body.append(e)
                 element.remove(e)
         element.append(body)

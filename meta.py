@@ -26,6 +26,7 @@ from __future__ import absolute_import
 import re
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from markdown import postprocessors
 
 
 META_RE = re.compile(r'^\s*\*\s*(?P<target>.*?)\[meta\s+(?P<name>.*?)\]\s*$')
@@ -34,10 +35,12 @@ META_RE = re.compile(r'^\s*\*\s*(?P<target>.*?)\[meta\s+(?P<name>.*?)\]\s*$')
 class MetaExtension(Extension):
 
     def extendMarkdown(self, md, md_globals):
-        meta = MetaPreprocessor(md)
-        md.registerExtension(self)
+        metapre = MetaPreprocessor(md)
+        metapost = MetaPostprocessor(md)
 
-        md.preprocessors.add('meta', meta, ">normalize_whitespace")
+        md.registerExtension(self)
+        md.preprocessors.add('meta', metapre, ">normalize_whitespace")
+        md.postprocessors.add('meta', metapost, '_end')
 
 
 class MetaPreprocessor(Preprocessor):
@@ -58,6 +61,29 @@ class MetaPreprocessor(Preprocessor):
             else:
                 new_lines.append(line)
         return new_lines
+
+
+class MetaPostprocessor(postprocessors.Postprocessor):
+
+    def __init__(self, md):
+        postprocessors.Postprocessor.__init__(self, md)
+        self._markdown = md
+
+    def run(self, text):
+        if not hasattr(self._markdown, '_meta_result'):
+            return text
+
+        meta = self._markdown._meta_result
+
+        if 'class' in meta:
+            text = text.replace('<h1>', '<h1><span class="class" title="class {cls}">{cls}::</span>'.format(cls=meta['class']))
+        if 'namespace' in meta:
+            text = text.replace('<h1>', '<h1><span class="namespace" title="namespace {ns}">{ns}::</span>'.format(ns=meta['namespace']))
+        if 'header' in meta:
+            text = '<div class="header">&lt;{}&gt;</div>'.format(meta['header']) + text
+        if 'id-type' in meta:
+            text = '<div class="identifier-type">{}</div>'.format(meta['id-type']) + text
+        return text
 
 
 def makeExtension(configs=None):
