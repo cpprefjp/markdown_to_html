@@ -123,7 +123,7 @@ class QualifierList(object):
         """置換対象になる単語にマーキングを施す
 
         対象文字列が 'sort' だとすれば、文字列中にある全ての 'sort' を
-        '{ランダムな文字列}sort{ランダムな文字列}'
+        '{ランダムな文字列}'
         という文字列に置換する。
         """
         if len(self._qs) == 0:
@@ -150,12 +150,11 @@ class QualifierList(object):
             match_qualifier[match_name] = q
 
             # text をこの文字列に置換する
-            text = '{match_name}{original}{match_name}'.format(
+            text = '{match_name}'.format(
                 match_name=match_name,
-                original=text,
             )
             # 置換された text だけを確実に検索するための正規表現
-            text_re = '(?:{match_name}(?P<{match_name}>.*?)(?:{match_name}))'.format(
+            text_re = '(?P<{match_name}>{match_name})'.format(
                 match_name=match_name
             )
             text_re_list.append(text_re)
@@ -178,7 +177,7 @@ class QualifierList(object):
         # マークされた文字列を探しだして、そのマークに対応した修飾を行う
         def convert(match):
             m, q = ((m, q) for m, q in self._match_qualifier.iteritems() if match.group(m)).next()
-            text = match.group(m)
+            text = q.target
             for command in q.commands:
                 xs = command.split(' ')
                 c = xs[0]
