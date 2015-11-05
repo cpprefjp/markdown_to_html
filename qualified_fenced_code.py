@@ -62,6 +62,15 @@ def _make_random_string():
     return ''.join(alphabets[randrange(len(alphabets))] for i in xrange(32))
 
 
+def _escape(txt):
+    """ basic html escaping """
+    txt = txt.replace('&', '&amp;')
+    txt = txt.replace('<', '&lt;')
+    txt = txt.replace('>', '&gt;')
+    txt = txt.replace('"', '&quot;')
+    return txt
+
+
 class QualifyDictionary(object):
 
     def __init__(self):
@@ -177,7 +186,7 @@ class QualifierList(object):
         # マークされた文字列を探しだして、そのマークに対応した修飾を行う
         def convert(match):
             m, q = ((m, q) for m, q in self._match_qualifier.iteritems() if match.group(m)).next()
-            text = q.target
+            text = _escape(q.target)
             for command in q.commands:
                 xs = command.split(' ')
                 c = xs[0]
@@ -234,7 +243,7 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
                     if m.group('lang'):
                         lang = LANG_TAG % m.group('lang')
 
-                    code = CODE_WRAP % (lang, self._escape(code))
+                    code = CODE_WRAP % (lang, _escape(code))
 
                 code = qualifier_list.qualify(code)
 
@@ -243,14 +252,6 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
             else:
                 break
         return text.split("\n")
-
-    def _escape(self, txt):
-        """ basic html escaping """
-        txt = txt.replace('&', '&amp;')
-        txt = txt.replace('<', '&lt;')
-        txt = txt.replace('>', '&gt;')
-        txt = txt.replace('"', '&quot;')
-        return txt
 
 
 def makeExtension(configs=None):
