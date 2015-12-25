@@ -277,6 +277,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         except etree.ParseError, e:
             lineno = e.position[0]
             xs = text.split('\n')[lineno - 5:lineno + 5]
+            print u'[Parse Error : {0}]'.format(self.config['full_path'])
             for x, n in zip(xs, range(lineno - 5, lineno + 5)):
                 print u'{0:5d} {1}'.format(n + 1, x)
             raise
