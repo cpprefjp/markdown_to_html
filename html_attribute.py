@@ -1,14 +1,18 @@
-#coding: utf-8
-from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
 """
 markdown から変換した HTML に属性を追加する
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import re
 import sys
-from markdown.util import etree
-from markdown import postprocessors
+
 import markdown
+from markdown import postprocessors
+from markdown.util import etree
 
 HTML_TAGS = {
     'html',
@@ -274,14 +278,14 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         text = '<{tag}>{text}</{tag}>'.format(tag=self._markdown.doc_tag, text=text)
         try:
             root = etree.fromstring(text.encode('utf-8'))
-        except etree.ParseError, e:
+        except etree.ParseError as e:
             lineno = e.position[0]
             xs = text.split('\n')[lineno - 5:lineno + 5]
-            print u'[Parse Error : {0}]'.format(self.config['full_path'])
+            print('[Parse Error : {0}]'.format(self.config['full_path']).encode('utf-8'))
             for x, n in zip(xs, range(lineno - 5, lineno + 5)):
-                print u'{0:5d} {1}'.format(n + 1, x)
+                print('{0:5d} {1}'.format(n + 1, x).encode('utf-8'))
             raise
-        #self._iterate(root, self._add_color_code)
+        # self._iterate(root, self._add_color_code)
         self._iterate(root, self._add_border_table)
         self._iterate(root, self._to_absolute_url)
         self._add_meta(root)

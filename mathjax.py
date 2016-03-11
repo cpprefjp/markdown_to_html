@@ -1,4 +1,4 @@
-#coding: utf-8
+# -*- coding: utf-8 -*-
 """
 MathJax を使えるようにする
 =========================
@@ -9,10 +9,13 @@ MathJax を使えるようにする
 
 MathJaxを有効にした場合、$$...$$ （ブロック）か $...$ （インライン）に挟まれた文字列が数式になる
 """
-
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
+
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 

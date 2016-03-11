@@ -1,5 +1,4 @@
-#coding: utf-8
-from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
 """
 メタデータ
 =========================================
@@ -23,12 +22,16 @@ from __future__ import unicode_literals
     >>> md._meta_result
     {'header': ['vector'], 'id-type': ['function'], 'namespace': ['std'], 'class': ['vector'], 'cpp': ['cpp11deprecated', 'cpp14removed']}
 """
-
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
+
 from markdown.extensions import Extension
-from markdown.preprocessors import Preprocessor
 from markdown import postprocessors
+from markdown.preprocessors import Preprocessor
 
 
 META_RE = re.compile(r'^\s*\*\s*(?P<target>.*?)\[meta\s+(?P<name>.*?)\]\s*$')

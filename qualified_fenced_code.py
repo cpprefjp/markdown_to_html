@@ -1,5 +1,4 @@
-#coding: utf-8
-from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
 """
 Fenced Code Extension の改造版
 =========================================
@@ -29,12 +28,18 @@ github でのコードブロック記法が使える。
     ... '''
     >>> print markdown.markdown(text, extensions=['qualified_fenced_code'])
 """
-
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import re
+
+from markdown.extensions.codehilite import CodeHilite
+from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+
 
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
@@ -54,16 +59,15 @@ class QualifiedFencedCodeExtension(Extension):
 
 
 def _make_random_string():
-    """アルファベットから成るランダムな文字列を作る
-    """
-    import string
+    """アルファベットから成るランダムな文字列を作る"""
     from random import randrange
+    import string
     alphabets = string.ascii_letters
     return ''.join(alphabets[randrange(len(alphabets))] for i in xrange(32))
 
 
 def _escape(txt):
-    """ basic html escaping """
+    """basic html escaping"""
     txt = txt.replace('&', '&amp;')
     txt = txt.replace('<', '&lt;')
     txt = txt.replace('>', '&gt;')
@@ -93,8 +97,7 @@ class QualifyDictionary(object):
 
 class Qualifier(object):
 
-    """修飾１個分のデータを保持するクラス
-    """
+    """修飾１個分のデータを保持するクラス"""
 
     def __init__(self, line, qdic):
         command_res = [r'(\[{cmd}(\]|.*?\]))'.format(cmd=cmd) for cmd in qdic.qualify_dic]
@@ -124,7 +127,7 @@ class QualifierList(object):
         def ignore(f, *args, **kwargs):
             try:
                 return f(*args, **kwargs)
-            except:
+            except Exception:
                 return None
         self._qs = filter(None, [ignore(Qualifier, v, self._qdic) for v in lines])
 

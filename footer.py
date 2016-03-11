@@ -1,12 +1,15 @@
-#coding: utf-8
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import markdown
 from markdown.util import etree
 
 
 class FooterExtension(markdown.Extension):
-
-    """ Footer Extension. """
-
+    """Footer Extension."""
     def __init__(self, configs):
         # デフォルトの設定
         self.config = {
@@ -25,9 +28,7 @@ class FooterExtension(markdown.Extension):
 
 
 class FooterTreeprocessor(markdown.treeprocessors.Treeprocessor):
-
-    """ Build and append footnote div to end of document. """
-
+    """Build and append footnote div to end of document."""
     def _make_footer(self):
         footer = etree.Element('footer')
         a = etree.SubElement(footer, 'a')
