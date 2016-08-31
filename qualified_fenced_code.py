@@ -231,7 +231,6 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
             if m:
                 qualifies = m.group('qualifies') or ''
                 qualifies = qualifies + self.global_qualify_list
-                print('qualifies : {}'.format(qualifies))
                 qualifies = filter(None, qualifies.split('\n'))
                 code = m.group('code')
                 qualifier_list = QualifierList(qualifies)
