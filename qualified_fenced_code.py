@@ -40,6 +40,7 @@ from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
+import traceback
 
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
@@ -51,8 +52,13 @@ QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
 
 class QualifiedFencedCodeExtension(Extension):
 
+
+    def __init__(self, configs):
+        global_qualify_list = configs[0][1]
+        self.global_qualify_list = global_qualify_list
+
     def extendMarkdown(self, md, md_globals):
-        fenced_block = QualifiedFencedBlockPreprocessor(md)
+        fenced_block = QualifiedFencedBlockPreprocessor(md, self.global_qualify_list)
         md.registerExtension(self)
 
         md.preprocessors.add('qualified_fenced_code', fenced_block, ">normalize_whitespace")
@@ -202,11 +208,12 @@ class QualifierList(object):
 
 class QualifiedFencedBlockPreprocessor(Preprocessor):
 
-    def __init__(self, md):
+    def __init__(self, md, global_qualify_list):
         Preprocessor.__init__(self, md)
 
         self.checked_for_codehilite = False
         self.codehilite_conf = {}
+        self.global_qualify_list = global_qualify_list
 
     def run(self, lines):
         # Check for code hilite extension
@@ -223,6 +230,8 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
             m = QUALIFIED_FENCED_BLOCK_RE.search(text)
             if m:
                 qualifies = m.group('qualifies') or ''
+                qualifies = qualifies + self.global_qualify_list
+                print('qualifies : {}'.format(qualifies))
                 qualifies = filter(None, qualifies.split('\n'))
                 code = m.group('code')
                 qualifier_list = QualifierList(qualifies)
