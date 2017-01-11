@@ -132,7 +132,17 @@ class QualifierList(object):
                 return f(*args, **kwargs)
             except Exception:
                 return None
-        self._qs = filter(None, [ignore(Qualifier, v, self._qdic) for v in lines])
+
+        def unique(xs):
+            seen = set()
+            results = []
+            for x in xs:
+                if x not in seen:
+                    seen.add(x)
+                    results.append(x)
+            return results
+
+        self._qs = filter(None, [ignore(Qualifier, v, self._qdic) for v in unique(lines)])
 
     def mark(self, code):
         """置換対象になる単語にマーキングを施す
@@ -142,6 +152,7 @@ class QualifierList(object):
         という文字列に置換する。
         """
         if len(self._qs) == 0:
+            self._code_re = re.compile("")
             return code
 
         # 置換対象になる単語を正規表現で表す
@@ -149,7 +160,17 @@ class QualifierList(object):
             return '((?<=[^a-zA-Z_])|(?:^)){target}((?=[^a-zA-Z_])|(?:$))'.format(
                 target=re.escape(target)
             )
-        target_re_text = '|'.join('(?:{})'.format(get_target_re(q.target)) for q in self._qs)
+        def find_match(target):
+            pattern = re.compile(target)
+            return pattern.search(code) != None
+
+        pre_target_re_text_list = ['(?:{})'.format(get_target_re(q.target)) for q in self._qs]
+        pre_target_re_text_list = filter(find_match, pre_target_re_text_list)
+        if len(pre_target_re_text_list) == 0:
+            self._code_re = re.compile("")
+            return code
+
+        target_re_text = '|'.join(pre_target_re_text_list)
 
         # 対象となる単語を置換し、その置換された文字列を後で辿るための正規表現（text_re_list）と、
         # 置換された文字列に対してどのような修飾を行えばいいかという辞書（match_qualifier）を作る。
