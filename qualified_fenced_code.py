@@ -40,8 +40,6 @@ from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-import traceback
-
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
@@ -51,7 +49,6 @@ QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
 
 
 class QualifiedFencedCodeExtension(Extension):
-
 
     def __init__(self, configs):
         global_qualify_list = configs[0][1]
