@@ -87,6 +87,11 @@ class MetaPostprocessor(postprocessors.Postprocessor):
             'title': 'C++14で追加',
             'text': '(C++14)',
         },
+        'cpp17': {
+            'class_name': 'cpp17',
+            'title': 'C++17で追加',
+            'text': '(C++17)',
+        },
         'cpp11deprecated': {
             'class_name': 'cpp11deprecated text-warning',
             'title': 'C++11で非推奨',
@@ -101,6 +106,16 @@ class MetaPostprocessor(postprocessors.Postprocessor):
             'class_name': 'cpp14removed text-danger',
             'title': 'C++11で削除',
             'text': '(C++11で削除)',
+        },
+        'cpp17deprecated': {
+            'class_name': 'cpp17deprecated text-warning',
+            'title': 'C++17で非推奨',
+            'text': '(C++17で非推奨)',
+        },
+        'cpp17removed': {
+            'class_name': 'cpp17removed text-danger',
+            'title': 'C++17で削除',
+            'text': '(C++17で削除)',
         },
     }
 
