@@ -43,9 +43,10 @@ from markdown.preprocessors import Preprocessor
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
-QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)[ ]*\n(?P<code>.*?)(?<=\n)\s*(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
+QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)[ ]*\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
 QUALIFY_RE = re.compile(r'^\* +(?P<target>.*?)(?P<commands>(\[.*?\])*)$')
 QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
+INDENT_RE = re.compile(r'^[ \t]+', re.MULTILINE)
 
 
 class QualifiedFencedCodeExtension(Extension):
@@ -224,6 +225,13 @@ class QualifierList(object):
         return self._code_re.sub(convert, html)
 
 
+def _removeIndent(code, indent):
+    if len(indent) == 0:
+        return code
+    l = len(indent.expandtabs(4))
+    return INDENT_RE.sub(lambda m: m.group().expandtabs(4)[l:], code)
+
+
 class QualifiedFencedBlockPreprocessor(Preprocessor):
 
     def __init__(self, md, global_qualify_list):
@@ -250,7 +258,7 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
                 qualifies = m.group('qualifies') or ''
                 qualifies = qualifies + self.global_qualify_list
                 qualifies = filter(None, qualifies.split('\n'))
-                code = m.group('code')
+                code = _removeIndent(*m.group('code', 'indent'))
                 qualifier_list = QualifierList(qualifies)
                 code = qualifier_list.mark(code)
 
