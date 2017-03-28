@@ -44,7 +44,6 @@ CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
 QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)[ ]*\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
-QUALIFY_RE = re.compile(r'^\* +(?P<target>.*?)(?P<commands>(\[.*?\])*)$')
 QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
 INDENT_RE = re.compile(r'^[ \t]+', re.MULTILINE)
 
@@ -106,7 +105,7 @@ class Qualifier(object):
     def __init__(self, line, qdic):
         command_res = [r'(\[{cmd}(\]|.*?\]))'.format(cmd=cmd) for cmd in qdic.qualify_dic]
 
-        qualify_re_str = r'^\* +(?P<target>.*?)(?P<commands>({commands})+)$'.format(
+        qualify_re_str = r'^[ \t]*\*[ \t]+(?P<target>.*?)(?P<commands>({commands})+)$'.format(
             commands='|'.join(command_res))
         qualify_re = re.compile(qualify_re_str)
 
@@ -161,9 +160,10 @@ class QualifierList(object):
             return '((?<=[^a-zA-Z_])|(?:^)){target}((?=[^a-zA-Z_])|(?:$))'.format(
                 target=re.escape(target)
             )
+
         def find_match(target):
             pattern = re.compile(target)
-            return pattern.search(code) != None
+            return pattern.search(code) is not None
 
         pre_target_re_text_list = ['(?:{})'.format(get_target_re(q.target)) for q in self._qs]
         pre_target_re_text_list = filter(find_match, pre_target_re_text_list)
