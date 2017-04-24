@@ -33,7 +33,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import regex as re
+import re
 
 from markdown.extensions.codehilite import CodeHilite
 from markdown.extensions.codehilite import CodeHiliteExtension
