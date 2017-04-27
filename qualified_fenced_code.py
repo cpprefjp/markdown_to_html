@@ -118,7 +118,12 @@ class Qualifier(object):
 
         def f(match):
             self.commands.append(match.group(1))
-        QUALIFY_COMMAND_RE.sub(f, m.group('commands'))
+
+        try:
+            QUALIFY_COMMAND_RE.sub(f, m.group('commands'))
+        except TypeError:
+            pass  # workaround for regex library
+                  # TypeError: expected string instance, NoneType found
 
 
 class QualifierList(object):
