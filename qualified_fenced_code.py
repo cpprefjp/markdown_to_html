@@ -122,8 +122,9 @@ class Qualifier(object):
         try:
             QUALIFY_COMMAND_RE.sub(f, m.group('commands'))
         except TypeError:
-            pass  # workaround for regex library
-                  # TypeError: expected string instance, NoneType found
+            # workaround for regex library
+            # TypeError: expected string instance, NoneType found
+            pass
 
 
 class QualifierList(object):
