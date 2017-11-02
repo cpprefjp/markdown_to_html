@@ -140,6 +140,8 @@ class MetaPostprocessor(postprocessors.Postprocessor):
 
         meta = self._markdown._meta_result
 
+        text = text.replace('<h1>', '<h1><span class="token">').replace('</h1>', '</span></h1>')
+
         if 'cpp' in meta:
             for name in meta['cpp']:
                 text = text.replace('</h1>', '<span class="cpp {class_name}" title="{title}">{text}</span></h1>'.format(**self.CPP_DIC[name]))
