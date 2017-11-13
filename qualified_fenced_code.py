@@ -126,6 +126,22 @@ class Qualifier(object):
             # TypeError: expected string instance, NoneType found
             pass
 
+        self._target_re = None
+
+    # 置換対象になる単語を正規表現で表す
+    def get_target_re(self):
+        if self._target_re is None:
+            self._target_re = '((?<=[^a-zA-Z_])|(?:^)){target}((?=[^a-zA-Z_])|(?:$))'.format(target=re.escape(self.target))
+        self._target_re
+
+    _cache = {}
+
+    @classmethod
+    def get(cls, line, qdic):
+        if line not in cls._cache:
+            cls._cache[line] = cls(line, qdic)
+        cls._cache[line]
+
 
 class QualifierList(object):
 
@@ -133,9 +149,9 @@ class QualifierList(object):
         self._qdic = QualifyDictionary()
 
         # Qualifier を作るが、エラーになったデータは取り除く
-        def ignore(f, *args, **kwargs):
+        def ignore(cls, *args, **kwargs):
             try:
-                return f(*args, **kwargs)
+                return cls.get(*args, **kwargs)
             except Exception:
                 return None
 
@@ -161,17 +177,11 @@ class QualifierList(object):
             self._code_re = re.compile("")
             return code
 
-        # 置換対象になる単語を正規表現で表す
-        def get_target_re(target):
-            return '((?<=[^a-zA-Z_])|(?:^)){target}((?=[^a-zA-Z_])|(?:$))'.format(
-                target=re.escape(target)
-            )
-
         def find_match(target):
             pattern = re.compile(target)
             return pattern.search(code) is not None
 
-        pre_target_re_text_list = ['(?:{})'.format(get_target_re(q.target)) for q in self._qs]
+        pre_target_re_text_list = ['(?:{})'.format(q.get_target_re()) for q in self._qs]
         pre_target_re_text_list = filter(find_match, pre_target_re_text_list)
         if len(pre_target_re_text_list) == 0:
             self._code_re = re.compile("")
