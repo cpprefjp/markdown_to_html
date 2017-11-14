@@ -132,7 +132,7 @@ class Qualifier(object):
     def get_target_re(self):
         if self._target_re is None:
             self._target_re = '((?<=[^a-zA-Z_])|(?:^)){target}((?=[^a-zA-Z_])|(?:$))'.format(target=re.escape(self.target))
-        self._target_re
+        return self._target_re
 
     _cache = {}
 
@@ -140,7 +140,7 @@ class Qualifier(object):
     def get(cls, line, qdic):
         if line not in cls._cache:
             cls._cache[line] = cls(line, qdic)
-        cls._cache[line]
+        return cls._cache[line]
 
 
 class QualifierList(object):
