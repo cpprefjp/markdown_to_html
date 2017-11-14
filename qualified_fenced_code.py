@@ -127,12 +127,23 @@ class Qualifier(object):
             pass
 
         self._target_re = None
+        self._target_re_text = None
 
     # 置換対象になる単語を正規表現で表す
-    def get_target_re(self):
+    def get_target_re_text(self):
+        if self._target_re_text is None:
+            target_re_text = '((?<=[^a-zA-Z_])|(?:^)){target}((?=[^a-zA-Z_])|(?:$))'.format(target=re.escape(self.target))
+            self._target_re_text = '(?:{})'.format(target_re_text)
+        return self._target_re_text
+
+    def _get_target_re(self):
         if self._target_re is None:
-            self._target_re = '((?<=[^a-zA-Z_])|(?:^)){target}((?=[^a-zA-Z_])|(?:$))'.format(target=re.escape(self.target))
+            target_re = re.compile(self.get_target_re_text())
+            self._target_re = target_re
         return self._target_re
+
+    def find_match(self, code):
+        return self._get_target_re().search(code) is not None
 
     _cache = {}
 
@@ -177,12 +188,7 @@ class QualifierList(object):
             self._code_re = re.compile("")
             return code
 
-        def find_match(target):
-            pattern = re.compile(target)
-            return pattern.search(code) is not None
-
-        pre_target_re_text_list = ['(?:{})'.format(q.get_target_re()) for q in self._qs]
-        pre_target_re_text_list = filter(find_match, pre_target_re_text_list)
+        pre_target_re_text_list = [q.get_target_re_text() for q in self._qs if q.find_match(code)]
         if len(pre_target_re_text_list) == 0:
             self._code_re = re.compile("")
             return code
