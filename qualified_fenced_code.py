@@ -43,7 +43,7 @@ from markdown.preprocessors import Preprocessor
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
-QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)[ ]*\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
+QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*).*?\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
 QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
 INDENT_RE = re.compile(r'^[ \t]+', re.MULTILINE)
 
