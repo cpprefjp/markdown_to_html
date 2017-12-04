@@ -33,6 +33,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import hashlib
+
 import regex as re
 
 from markdown.extensions.codehilite import CodeHilite
@@ -43,7 +45,7 @@ from markdown.preprocessors import Preprocessor
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
-QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*).*?\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
+QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)(?P<lang_meta>.*?)\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
 QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
 INDENT_RE = re.compile(r'^[ \t]+', re.MULTILINE)
 
@@ -259,6 +261,7 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
     def __init__(self, md, global_qualify_list):
         Preprocessor.__init__(self, md)
 
+        md._example_codes = []
         self.checked_for_codehilite = False
         self.codehilite_conf = {}
         self.global_qualify_list = global_qualify_list
@@ -277,10 +280,19 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
         while 1:
             m = QUALIFIED_FENCED_BLOCK_RE.search(text)
             if m:
+                # ```cpp example みたいに書かれていたらサンプルコードとして扱う
+                is_example = m.group('lang_meta') and ('example' in m.group('lang_meta').strip().split())
+
                 qualifies = m.group('qualifies') or ''
                 qualifies = qualifies + self.global_qualify_list
                 qualifies = filter(None, qualifies.split('\n'))
                 code = _removeIndent(*m.group('code', 'indent'))
+
+                # サンプルコードだったら、self.markdown の中にコードの情報と ID を入れておく
+                if is_example:
+                    example_id = hashlib.sha1(code.encode('utf-8')).hexdigest()
+                    self.markdown._example_codes.append({"id": example_id, "code": code})
+
                 qualifier_list = QualifierList(qualifies)
                 code = qualifier_list.mark(code)
 
@@ -297,6 +309,9 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
                         noclasses=self.codehilite_conf['noclasses'][0])
 
                     code = highliter.hilite()
+                    # サンプルコードだったら <div id="..." class="yata"> で囲む
+                    if is_example:
+                        code = '<div id="%s" class="yata">%s</div>' % (example_id, code)
                 else:
                     lang = ''
                     if m.group('lang'):

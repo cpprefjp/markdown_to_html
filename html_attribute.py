@@ -128,6 +128,8 @@ HTML_TAGS = {
 
 class SafeRawHtmlPostprocessor(postprocessors.Postprocessor):
 
+    HTML_TAG_RE = re.compile(r'^\<\/?([a-zA-Z0-9]+)[^\>]*\>$')
+
     def run(self, text):
         for i in range(self.markdown.htmlStash.html_counter):
             html, safe = self.markdown.htmlStash.rawHtmlBlocks[i]
@@ -138,7 +140,7 @@ class SafeRawHtmlPostprocessor(postprocessors.Postprocessor):
 
     def escape(self, html):
         # html tag
-        m = re.match(r'^\<\/?([a-zA-Z0-9]+)[^\>]*\>$', html)
+        m = re.match(self.HTML_TAG_RE, html)
         if m:
             if m.group(1) in HTML_TAGS:
                 return html
