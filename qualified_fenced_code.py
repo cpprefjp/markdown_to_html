@@ -311,9 +311,7 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
                     code = highliter.hilite()
                     # サンプルコードだったら <div id="..." class="yata"> で囲む
                     if is_example:
-                        # ちょっとおかしくなったので何もしない
-                        #code = '<div id="%s" class="yata">%s</div>' % (example_id, code)
-                        pass
+                        code = '<div id="%s" class="yata">%s</div>' % (example_id, code)
                 else:
                     lang = ''
                     if m.group('lang'):
