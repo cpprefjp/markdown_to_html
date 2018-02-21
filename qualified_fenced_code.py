@@ -277,6 +277,9 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
             self.checked_for_codehilite = True
 
         text = "\n".join(lines)
+
+        example_counter = 0
+
         while 1:
             m = QUALIFIED_FENCED_BLOCK_RE.search(text)
             if m:
@@ -290,8 +293,9 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
 
                 # サンプルコードだったら、self.markdown の中にコードの情報と ID を入れておく
                 if is_example:
-                    example_id = hashlib.sha1(code.encode('utf-8')).hexdigest()
+                    example_id = hashlib.sha1(str(example_counter) + code.encode('utf-8')).hexdigest()
                     self.markdown._example_codes.append({"id": example_id, "code": code})
+                    example_counter += 1
 
                 qualifier_list = QualifierList(qualifies)
                 code = qualifier_list.mark(code)

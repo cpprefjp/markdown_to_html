@@ -20,10 +20,13 @@ Markdown 2.6.9 の tables 拡張のコードを持ってきた。
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+
+import re
+
 from markdown.extensions import Extension
 from markdown.blockprocessors import BlockProcessor
 from markdown.util import etree
-import re
+
 PIPE_NONE = 0
 PIPE_LEFT = 1
 PIPE_RIGHT = 2
