@@ -28,10 +28,6 @@ github でのコードブロック記法が使える。
     ... '''
     >>> print markdown.markdown(text, extensions=['qualified_fenced_code'])
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import hashlib
 
@@ -53,8 +49,7 @@ INDENT_RE = re.compile(r'^[ \t]+', re.MULTILINE)
 class QualifiedFencedCodeExtension(Extension):
 
     def __init__(self, configs):
-        global_qualify_list = configs[0][1]
-        self.global_qualify_list = global_qualify_list
+        self.global_qualify_list = configs['global_qualify_list']
 
     def extendMarkdown(self, md, md_globals):
         fenced_block = QualifiedFencedBlockPreprocessor(md, self.global_qualify_list)
@@ -68,7 +63,7 @@ def _make_random_string():
     from random import randrange
     import string
     alphabets = string.ascii_letters
-    return ''.join(alphabets[randrange(len(alphabets))] for i in xrange(32))
+    return ''.join(alphabets[randrange(len(alphabets))] for i in range(32))
 
 
 def _escape(txt):
@@ -147,14 +142,6 @@ class Qualifier(object):
     def find_match(self, code):
         return self._get_target_re().search(code) is not None
 
-    _cache = {}
-
-    @classmethod
-    def get(cls, line, qdic):
-        if line not in cls._cache:
-            cls._cache[line] = cls(line, qdic)
-        return cls._cache[line]
-
 
 class QualifierList(object):
 
@@ -162,22 +149,19 @@ class QualifierList(object):
         self._qdic = QualifyDictionary()
 
         # Qualifier を作るが、エラーになったデータは取り除く
-        def ignore(cls, *args, **kwargs):
-            try:
-                return cls.get(*args, **kwargs)
-            except Exception:
-                return None
-
         def unique(xs):
             seen = set()
             results = []
             for x in xs:
                 if x not in seen:
                     seen.add(x)
-                    results.append(x)
+                    try:
+                        results.append(Qualifier(x, self._qdic))
+                    except Exception:
+                        pass
             return results
 
-        self._qs = filter(None, [ignore(Qualifier, v, self._qdic) for v in unique(lines)])
+        self._qs = unique(lines)
 
     def mark(self, code):
         """置換対象になる単語にマーキングを施す
@@ -207,7 +191,7 @@ class QualifierList(object):
             match_name = _make_random_string()
             # 対象となる単語がどの修飾のデータなのかを調べる
             text = match.group(0)
-            q = (q for q in self._qs if q.target == text).next()
+            q = next(q for q in self._qs if q.target == text)
             match_qualifier[match_name] = q
 
             # text をこの文字列に置換する
@@ -237,7 +221,7 @@ class QualifierList(object):
 
         # マークされた文字列を探しだして、そのマークに対応した修飾を行う
         def convert(match):
-            m, q = ((m, q) for m, q in self._match_qualifier.iteritems() if match.group(m)).next()
+            q = next(q for m, q in self._match_qualifier.items() if match.group(m))
             text = _escape(q.target)
             for command in q.commands:
                 xs = command.split(' ')
@@ -288,12 +272,12 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
 
                 qualifies = m.group('qualifies') or ''
                 qualifies = qualifies + self.global_qualify_list
-                qualifies = filter(None, qualifies.split('\n'))
+                qualifies = [f for f in qualifies.split('\n') if f]
                 code = _removeIndent(*m.group('code', 'indent'))
 
                 # サンプルコードだったら、self.markdown の中にコードの情報と ID を入れておく
                 if is_example:
-                    example_id = hashlib.sha1(str(example_counter) + code.encode('utf-8')).hexdigest()
+                    example_id = hashlib.sha1((str(example_counter) + code).encode('utf-8')).hexdigest()
                     self.markdown._example_codes.append({"id": example_id, "code": code})
                     example_counter += 1
 
@@ -332,5 +316,5 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
         return text.split("\n")
 
 
-def makeExtension(configs=None):
-    return QualifiedFencedCodeExtension(configs=configs)
+def makeExtension(configs):
+    return QualifiedFencedCodeExtension(dict(configs))
