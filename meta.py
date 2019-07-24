@@ -97,6 +97,11 @@ class MetaPostprocessor(postprocessors.Postprocessor):
             'title': 'C++20で追加',
             'text': '(C++20)',
         },
+        'cpp23': {
+            'class_name': 'cpp23',
+            'title': 'C++23で追加',
+            'text': '(C++23)',
+        },
         'cpp11deprecated': {
             'class_name': 'cpp11deprecated text-warning',
             'title': 'C++11で非推奨',
@@ -131,6 +136,16 @@ class MetaPostprocessor(postprocessors.Postprocessor):
             'class_name': 'cpp20removed text-danger',
             'title': 'C++20で削除',
             'text': '(C++20で削除)',
+        },
+        'cpp23deprecated': {
+            'class_name': 'cpp23deprecated text-warning',
+            'title': 'C++23で非推奨',
+            'text': '(C++23で非推奨)',
+        },
+        'cpp23removed': {
+            'class_name': 'cpp23removed text-danger',
+            'title': 'C++23で削除',
+            'text': '(C++23で削除)',
         },
     }
 
