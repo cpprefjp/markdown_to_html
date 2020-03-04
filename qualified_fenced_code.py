@@ -48,8 +48,8 @@ INDENT_RE = re.compile(r'^[ \t]+', re.MULTILINE)
 
 class QualifiedFencedCodeExtension(Extension):
 
-    def __init__(self, configs):
-        self.global_qualify_list = configs['global_qualify_list']
+    def __init__(self, global_qualify_list):
+        self.global_qualify_list = global_qualify_list
 
     def extendMarkdown(self, md, md_globals):
         fenced_block = QualifiedFencedBlockPreprocessor(md, self.global_qualify_list)
@@ -236,8 +236,8 @@ class QualifierList(object):
 def _removeIndent(code, indent):
     if len(indent) == 0:
         return code
-    l = len(indent.expandtabs(4))
-    return INDENT_RE.sub(lambda m: m.group().expandtabs(4)[l:], code)
+    n = len(indent.expandtabs(4))
+    return INDENT_RE.sub(lambda m: m.group().expandtabs(4)[n:], code)
 
 
 class QualifiedFencedBlockPreprocessor(Preprocessor):
@@ -309,12 +309,12 @@ class QualifiedFencedBlockPreprocessor(Preprocessor):
 
                 code = qualifier_list.qualify(code)
 
-                placeholder = self.markdown.htmlStash.store(code, safe=True)
+                placeholder = self.markdown.htmlStash.store(code)
                 text = '%s\n%s\n%s' % (text[:m.start()], placeholder, text[m.end():])
             else:
                 break
         return text.split("\n")
 
 
-def makeExtension(configs):
-    return QualifiedFencedCodeExtension(dict(configs))
+def makeExtension(**kwargs):
+    return QualifiedFencedCodeExtension(**kwargs)

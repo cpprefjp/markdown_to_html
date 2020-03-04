@@ -167,5 +167,5 @@ class MetaPostprocessor(postprocessors.Postprocessor):
         return text
 
 
-def makeExtension(configs=None):
-    return MetaExtension(configs=configs)
+def makeExtension(**kwargs):
+    return MetaExtension(**kwargs)

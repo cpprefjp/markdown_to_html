@@ -8,7 +8,8 @@ import sys
 
 import markdown
 from markdown import postprocessors
-from markdown.util import etree
+
+import xml.etree.ElementTree as etree
 
 HTML_TAGS = {
     'a',
@@ -128,9 +129,9 @@ class SafeRawHtmlPostprocessor(postprocessors.Postprocessor):
 
     def run(self, text):
         for i in range(self.markdown.htmlStash.html_counter):
-            html, safe = self.markdown.htmlStash.rawHtmlBlocks[i]
-            if not safe:
-                html = self.escape(html)
+            html = self.markdown.htmlStash.rawHtmlBlocks[i]
+            # if not safe:
+            #     html = self.escape(html)
             text = text.replace(self.markdown.htmlStash.get_placeholder(i), html)
         return text
 
@@ -181,7 +182,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         # サイト内絶対パスで末尾に .md があった場合、取り除く
         # （github のプレビューとの互換性のため）
         # その後、指定があればその拡張子を追加する
-        matched = re.match('([^#]*)\.md(#.*)?$', url)
+        matched = re.match('([^#]*)\\.md(#.*)?$', url)
         if matched:
             url = matched.group(1)
             if self.config['extension']:
@@ -237,8 +238,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                 element.attrib['href'] = self._remove_md(element.attrib['href'])
                 check_href = self._remove_md('/' + '/'.join(paths))
 
-            if (hasattr(self._markdown, '_html_attribute_hrefs') and
-               self._markdown._html_attribute_hrefs is not None):
+            if hasattr(self._markdown, '_html_attribute_hrefs') and self._markdown._html_attribute_hrefs is not None:
                 # パスの存在チェック
                 if check_href is not None:
                     check_href = re.sub('#.*', '', check_href)
@@ -306,18 +306,16 @@ class AttributePostprocessor(postprocessors.Postprocessor):
 
 class AttributeExtension(markdown.Extension):
 
-    def __init__(self, configs):
+    def __init__(self, **kwargs):
         # デフォルトの設定
         self.config = {
-            'base_url': [None, "Base URL used to link URL as absolute URL"],
-            'base_path': [None, "Base Path used to link URL as relative URL"],
-            'full_path': [None, "Full Path used to link URL as anchor URL"],
+            'base_url': ['', "Base URL used to link URL as absolute URL"],
+            'base_path': ['', "Base Path used to link URL as relative URL"],
+            'full_path': ['', "Full Path used to link URL as anchor URL"],
             'extension': ['', "URL extension"],
         }
 
-        # ユーザ設定で上書き
-        for key, value in configs:
-            self.setConfig(key, value)
+        super().__init__(**kwargs)
 
     def extendMarkdown(self, md, md_globals):
         attr = AttributePostprocessor(md)
@@ -326,5 +324,5 @@ class AttributeExtension(markdown.Extension):
         md.postprocessors['raw_html'] = SafeRawHtmlPostprocessor(md)
 
 
-def makeExtension(configs):
-    return AttributeExtension(configs)
+def makeExtension(**kwargs):
+    return AttributeExtension(**kwargs)

@@ -37,5 +37,5 @@ class FooterTreeprocessor(markdown.treeprocessors.Treeprocessor):
         root.append(footer)
 
 
-def makeExtension(configs=[]):
-    return FooterExtension(configs=configs)
+def makeExtension(**kwargs):
+    return FooterExtension(**kwargs)

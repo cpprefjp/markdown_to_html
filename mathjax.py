@@ -14,6 +14,7 @@ import re
 
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from markdown.util import code_escape
 
 
 MATHJAX_CONFIG_RE = re.compile(r'^\s*\*\s*(?P<target>.*?)\[mathjax\s+(?P<name>.*?)\]\s*$')
@@ -56,7 +57,7 @@ class MathJaxPreprocessor(Preprocessor):
             if not m:
                 break
             tex = m.group(0)
-            placeholder = self.markdown.htmlStash.store(tex, safe=False)
+            placeholder = self.markdown.htmlStash.store(code_escape(tex))
             text = text[:m.start()] + placeholder + text[m.end():]
 
         lines3 = []
@@ -67,12 +68,12 @@ class MathJaxPreprocessor(Preprocessor):
                 if not m:
                     break
                 tex = m.group(0)
-                placeholder = self.markdown.htmlStash.store(tex, safe=False)
+                placeholder = self.markdown.htmlStash.store(code_escape(tex))
                 line = line[:m.start()] + placeholder + line[m.end():]
             lines3.append(line)
 
         return lines3
 
 
-def makeExtension(configs=None):
-    return MathJaxExtension(configs=configs)
+def makeExtension(**kwargs):
+    return MathJaxExtension(**kwargs)
