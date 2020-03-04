@@ -2,10 +2,6 @@
 """
 markdown から変換した HTML に属性を追加する
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import re
 import sys
@@ -251,17 +247,17 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                         if self._remove_md(check_href.replace('.nolink', '')) in self._markdown._html_attribute_hrefs:
                             # .nolink マークされていたけど、実際はもうこのファイルは作られているっぽいケース
                             # .nolink を外すこと
-                            sys.stderr.write('Warning: [nolinked {full_path}] href "{url} ({check_href})" found.\n'.format(**locals()).encode('utf-8'))
+                            sys.stderr.write('Warning: [nolinked {full_path}] href "{url} ({check_href})" found.\n'.format(**locals()))
                             element.tag = 'span'
                         else:
                             # このファイルを作るように促す
                             check_href = check_href.replace('.nolink', '')
-                            sys.stdout.write('Note: You can create {check_href} for {full_path}.\n'.format(**locals()).encode('utf-8'))
+                            sys.stdout.write('Note: You can create {check_href} for {full_path}.\n'.format(**locals()))
                             element.tag = 'span'
                     else:
                         # .nolink でない、普通のファイル
                         if check_href not in self._markdown._html_attribute_hrefs:
-                            sys.stderr.write('Warning: [{full_path}] href "{url} ({check_href})" not found.\n'.format(**locals()).encode('utf-8'))
+                            sys.stderr.write('Warning: [{full_path}] href "{url} ({check_href})" not found.\n'.format(**locals()))
                             element.tag = 'span'
 
     def _add_meta(self, element):
@@ -279,13 +275,13 @@ class AttributePostprocessor(postprocessors.Postprocessor):
     def run(self, text):
         text = '<{tag}>{text}</{tag}>'.format(tag=self._markdown.doc_tag, text=text)
         try:
-            root = etree.fromstring(text.encode('utf-8'))
+            root = etree.fromstring(text)
         except etree.ParseError as e:
             lineno = e.position[0]
             xs = text.split('\n')[lineno - 5:lineno + 5]
-            print('[Parse Error : {0}]'.format(self.config['full_path']).encode('utf-8'))
+            print('[Parse Error : {0}]'.format(self.config['full_path']))
             for x, n in zip(xs, range(lineno - 5, lineno + 5)):
-                print('{0:5d} {1}'.format(n + 1, x).encode('utf-8'))
+                print('{0:5d} {1}'.format(n + 1, x))
             raise
         # self._iterate(root, self._add_color_code)
         self._iterate(root, self._add_border_table)

@@ -18,9 +18,6 @@ License: [BSD](http://www.opensource.org/licenses/bsd-license.php)
 Markdown 2.6.9 の tables 拡張のコードを持ってきた。
 """
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import re
 
 from markdown.extensions import Extension

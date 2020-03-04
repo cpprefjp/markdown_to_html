@@ -22,10 +22,6 @@
     >>> md._meta_result
     {'header': ['vector'], 'id-type': ['function'], 'namespace': ['std'], 'class': ['vector'], 'cpp': ['cpp11deprecated', 'cpp14removed']}
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import re
 
