@@ -163,7 +163,11 @@ class MetaPostprocessor(postprocessors.Postprocessor):
         if 'header' in meta:
             text = '<div class="header">&lt;{}&gt;</div>'.format(meta['header'][0]) + text
         if 'id-type' in meta:
-            text = '<div class="identifier-type">{}</div>'.format(meta['id-type'][0]) + text
+            id_type = meta['id-type'][0]
+            if id_type == 'cpo':
+                text = '<div class="identifier-type">{}</div>'.format('customization point object') + text
+            else:
+                text = '<div class="identifier-type">{}</div>'.format(id_type) + text
         return text
 
 
