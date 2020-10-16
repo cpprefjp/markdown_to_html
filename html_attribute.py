@@ -162,7 +162,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
 
     def _iterate(self, elements, f):
         f(elements)
-        for child in elements.getchildren():
+        for child in elements:
             self._iterate(child, f)
 
     def _add_color_code(self, element):
