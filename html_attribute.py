@@ -3,6 +3,7 @@
 markdown から変換した HTML に属性を追加する
 """
 
+import posixpath
 import re
 import sys
 
@@ -156,9 +157,15 @@ class SafeRawHtmlPostprocessor(postprocessors.Postprocessor):
 
 class AttributePostprocessor(postprocessors.Postprocessor):
 
-    def __init__(self, md):
+    def __init__(self, md, config):
         postprocessors.Postprocessor.__init__(self, md)
         self._markdown = md
+
+        self.config = config
+        self.re_url_hash = re.compile(r'#.*$')
+        self.url_base = self.config['base_url'].strip('/') + '/'
+        self.url_current = self.url_base + self._remove_md(self.config['full_path'])
+        self.url_current_base = self.url_base + self.config['base_path'].strip('/')
 
     def _iterate(self, elements, f):
         f(elements)
@@ -260,6 +267,21 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                             sys.stderr.write('Warning: [{full_path}] href "{url} ({check_href})" not found.\n'.format(**locals()))
                             element.tag = 'span'
 
+    def _to_relative_url(self, element):
+        if element.tag == 'a' and 'href' in element.attrib:
+            href = element.attrib['href']
+            if self.re_url_hash.sub("", href) == self.url_current:
+                element.attrib['href'] = href[len(self.url_current):]
+            elif href.startswith(self.url_base):
+                element.attrib['href'] = posixpath.relpath(href, self.url_current_base)
+
+    def _adjust_url(self, element):
+        self._to_absolute_url(element)
+
+        # 一旦絶対パスに統一してから相対パスに変換する
+        if self.config['use_relative_link']:
+            self._to_relative_url(element)
+
     def _add_meta(self, element):
         body = etree.Element('div', itemprop="articleBody")
         after_h1 = False
@@ -285,7 +307,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
             raise
         # self._iterate(root, self._add_color_code)
         self._iterate(root, self._add_border_table)
-        self._iterate(root, self._to_absolute_url)
+        self._iterate(root, self._adjust_url)
         self._add_meta(root)
 
         output = self._markdown.serializer(root)
@@ -313,13 +335,13 @@ class AttributeExtension(markdown.Extension):
             'base_path': ['', "Base Path used to link URL as relative URL"],
             'full_path': ['', "Full Path used to link URL as anchor URL"],
             'extension': ['', "URL extension"],
+            'use_relative_link': [False, "Whether to use relative paths for domestic links"]
         }
 
         super().__init__(**kwargs)
 
     def extendMarkdown(self, md, md_globals):
-        attr = AttributePostprocessor(md)
-        attr.config = self.getConfigs()
+        attr = AttributePostprocessor(md, self.getConfigs())
         md.postprocessors.add('html_attribute', attr, '_end')
         md.postprocessors['raw_html'] = SafeRawHtmlPostprocessor(md)
 
