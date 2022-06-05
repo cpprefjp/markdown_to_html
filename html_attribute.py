@@ -167,6 +167,10 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         self.url_current = self.url_base + self._remove_md(self.config['full_path'])
         self.url_current_base = self.url_base + self.config['base_path'].strip('/')
 
+        image_repo = self.config['image_repo']
+        self.re_url_github_image = re.compile(r'^https?://(?:raw.github.com/%s/master|github.com/%s/raw)/' % (image_repo, image_repo))
+        self.image_base = 'https://raw.githubusercontent.com/%s/master/' % image_repo
+
     def _iterate(self, elements, f):
         f(elements)
         for child in elements:
@@ -275,12 +279,26 @@ class AttributePostprocessor(postprocessors.Postprocessor):
             elif href.startswith(self.url_base):
                 element.attrib['href'] = posixpath.relpath(href, self.url_current_base)
 
+    def _resolve_image_src(self, element):
+        if element.tag == 'img' and 'src' in element.attrib:
+            src = element.attrib['src']
+            src = self.re_url_github_image.sub(self.image_base, src, count=1)
+            if self.config['use_static_image'] and src.startswith(self.image_base):
+                src = 'static/image/' + src[len(self.image_base):]
+                if self.config['use_relative_link']:
+                    src = posixpath.relpath(self.url_base + src, self.url_current_base)
+                else:
+                    src = '/' + src
+            element.attrib['src'] = src
+
     def _adjust_url(self, element):
         self._to_absolute_url(element)
 
         # 一旦絶対パスに統一してから相対パスに変換する
         if self.config['use_relative_link']:
             self._to_relative_url(element)
+
+        self._resolve_image_src(element)
 
     def _add_meta(self, element):
         body = etree.Element('div', itemprop="articleBody")
@@ -335,7 +353,9 @@ class AttributeExtension(markdown.Extension):
             'base_path': ['', "Base Path used to link URL as relative URL"],
             'full_path': ['', "Full Path used to link URL as anchor URL"],
             'extension': ['', "URL extension"],
-            'use_relative_link': [False, "Whether to use relative paths for domestic links"]
+            'use_relative_link': [False, "Whether to use relative paths for domestic links"],
+            'image_repo': ['cpprefjp/image', "Name of GitHub repository that contains the images"],
+            'use_static_image': [False, "Whether to use the images in static/image instead on GitHub"]
         }
 
         super().__init__(**kwargs)
