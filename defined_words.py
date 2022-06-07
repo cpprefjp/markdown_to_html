@@ -132,7 +132,10 @@ _RE_WBEG = re.compile(r'^[\p{Ll}\p{Lu}_0-9]')
 _RE_WEND = re.compile(r'[\p{Ll}\p{Lu}_0-9]$')
 
 # ソース名 (.md) からHTML名 (.html) に置換する時に使う正規表現
-_RE_LINK_EXTENSION = re.compile(r'(?:\.md)?([?#]|$)', re.MULTILINE)
+_RE_LINK_EXTENSION = re.compile(r'^([^?#]+?)(?:\.md)([?#]|$)')
+
+# リンクに "https:" 等のスキーム名が含まれているか判定するのに使う正規表現
+_RE_LINK_SCHEME = re.compile(r'^[a-zA-Z0-9]+:')
 
 
 def _quoteWordForRegex(word):
@@ -146,6 +149,42 @@ def _quoteWordForRegex(word):
 
 class DefinedWordTreeprocessor(Postprocessor):
     """A postprocessor for Python-Markdown to create links of defined words."""
+
+    def _resolveWordProperty(self, word, prop):
+        if prop in self._dict[word]:
+            return self._dict[word][prop], None
+        visited = {}
+        while 'redirect' in self._dict[word]:
+            if word in visited:
+                raise Exception("defined_words: redirection loop for '%s'" % word)
+            visited[word] = True
+            word = self._dict[word]['redirect']
+            if prop in self._dict[word]:
+                return self._dict[word][prop], word
+        return None, None
+
+    def _resolveDictionary(self):
+        for word in self._dict.keys():
+            entry = self._dict[word]
+            if 'link' not in entry:
+                value, redirect = self._resolveWordProperty(word, 'link')
+                if value is not None:
+                    entry['link'] = value
+            if 'desc' not in entry:
+                value, redirect = self._resolveWordProperty(word, 'desc')
+                if value is not None:
+                    entry['desc'] = "%s。%s" % (redirect, value)
+
+        for word in self._dict.keys():
+            entry = self._dict[word]
+            if 'link' in entry:
+                link = entry['link']
+                if _RE_LINK_SCHEME.search(link) is None:
+                    link = _RE_LINK_EXTENSION.sub(r'\1%s\2' % self.extension, link, count=1)
+                    if not link.startswith('/'):
+                        raise Exception("defined_words: link='%s': relative link is unallowed" % link)
+                    link = self.base_url + link
+                entry['resolved_link'] = link
 
     def __init__(self, md, config):
         Postprocessor.__init__(self, md)
@@ -169,6 +208,8 @@ class DefinedWordTreeprocessor(Postprocessor):
             # 定]値" とリンク付けされてしまう。
             self.re_defined_words = re.compile(r'|'.join([_quoteWordForRegex(key) for key in sorted(self._dict.keys(), reverse=True)]), re.MULTILINE)
 
+            self._resolveDictionary()
+
     def _convertText(self, text):
         new_text = None
         ins = []
@@ -184,15 +225,12 @@ class DefinedWordTreeprocessor(Postprocessor):
             else:
                 new_text = left
 
-            data = self._dict[word]
+            entry = self._dict[word]
             attrs = {'class': 'cpprefjp-defined-word'}
-            if 'link' in data:
-                link = _RE_LINK_EXTENSION.sub(self.extension + r'\1', data['link'], count=1)
-                if link.startswith('/'):
-                    link = self.base_url + link
-                attrs['href'] = link
-            if 'desc' in data:
-                attrs['data-desc'] = data['desc']
+            if 'resolved_link' in entry:
+                attrs['href'] = entry['resolved_link']
+            if 'desc' in entry:
+                attrs['data-desc'] = entry['desc']
             a = etree.Element('a', attrs)
             a.text = word
             ins.append(a)
