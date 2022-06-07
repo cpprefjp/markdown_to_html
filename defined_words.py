@@ -174,13 +174,10 @@ class DefinedWordTreeprocessor(Postprocessor):
         ins = []
         pos = 0
         prev = None
-        visited = {}
         for m in self.re_defined_words.finditer(text):
             word = m.group(0)
-            if word not in self._dict or word in visited:
+            if word not in self._dict:
                 continue
-            visited[word] = True
-
             left = text[pos:m.start()]
             if prev is not None:
                 prev.tail = left
