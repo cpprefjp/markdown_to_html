@@ -73,6 +73,16 @@ class MetaPostprocessor(postprocessors.Postprocessor):
         self._markdown = md
 
     CPP_DIC = {
+        'future': {
+            'class_name': 'future',
+            'title': '将来のC++として検討中',
+            'text': '(将来のC++機能)',
+        },
+        'archive': {
+            'class_name': 'archive',
+            'title': '廃案になったC++機能',
+            'text': '(廃案のC++機能)',
+        },
         'cpp11': {
             'class_name': 'cpp11',
             'title': 'C++11で追加',
