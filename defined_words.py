@@ -124,8 +124,8 @@ import regex as re
 
 import xml.etree.ElementTree as etree
 
-# リンク・コード・見出しなどの内部は自動リンクの対象としない。除外タグ判定用正規表現
-_RE_EXCLUDED_TAGS = re.compile(r'^(?:a|code|pre|kbd|dfn)$', re.IGNORECASE)
+# リンク・コード・タイトルなどの内部は自動リンクの対象としない。除外タグ判定用正規表現
+_RE_EXCLUDED_TAGS = re.compile(r'^(?:a|code|pre|kbd|dfn|h1)$', re.IGNORECASE)
 
 # 自動リンク対象を英単語境界に一致させる必要があるかの判定用正規表現
 _RE_WBEG = re.compile(r'^[\p{Ll}\p{Lu}_0-9]')
