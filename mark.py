@@ -31,7 +31,7 @@ class MarkExtension(Extension):
         markpre = MarkPreprocessor(md)
 
         md.registerExtension(self)
-        md.preprocessors.add('meta', markpre, ">normalize_whitespace")
+        md.preprocessors.add('mark', markpre, ">normalize_whitespace")
 
 
 class MarkPreprocessor(Preprocessor):
