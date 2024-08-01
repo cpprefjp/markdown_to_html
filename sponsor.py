@@ -60,7 +60,7 @@ def replace_sponsor_line(line: str, now: datetime.datetime) -> str:
     center_close = ""
     center = "<div style=\"text-align: center\">"
     center_close = "</div>"
-    img = "<img src=\"{}\" alt=\"{}\"{}/>".format(
+    img = "<img src=\"{0}\" alt=\"{1}\" title=\"{1}\"{2}/>".format(
         dict["img"],
         dict["name"],
         " width=\"{}\"".format(dict["size"]) if dict.get("size") is not None else ""
