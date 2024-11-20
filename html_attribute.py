@@ -9,6 +9,7 @@ import sys
 
 import markdown
 from markdown import postprocessors
+from markdown import serializers
 
 import xml.etree.ElementTree as etree
 
@@ -312,6 +313,32 @@ class AttributePostprocessor(postprocessors.Postprocessor):
                 element.remove(e)
         element.append(body)
 
+    def _tohtml(self, element):
+        # Note: 以下の様に etree.tostring(method="xml") を用いると
+        # <span></span> や <td></td> が <span /> や <td /> になってしまう。また、
+        # HTML 属性の順序が保持されない。
+        #
+        # return etree.tostring(element, encoding="unicode", method="xml")
+
+        # Note: 代わりに etree.tostring(method="html") を用いると、今度は <img
+        # /> や <br /> が <img> や <br> になってしまい好ましくない。またこの時
+        # も HTML 属性の順序が保持されない。
+        #
+        # return etree.tostring(element, encoding="unicode", method="html")
+
+        # 今は代わりに以下のようにして markdown.serializers の内部変数
+        # markdown.serializers.RE_AMP を一時的に書き換えることによって期待する
+        # 動作を得ている。これは markdown.serializers の内部実装に依存している
+        # ので、markdown.serializers の上流で内部実装に変更があると動かなくなる
+        # 可能性があることに注意する。
+        old_RE_AMP = serializers.RE_AMP
+        try:
+            serializers.RE_AMP = re.compile(r'&')
+            output = self._markdown.serializer(element)
+        finally:
+            serializers.RE_AMP = old_RE_AMP
+        return output
+
     def run(self, text):
         text = '<{tag}>{text}</{tag}>'.format(tag=self._markdown.doc_tag, text=text)
         try:
@@ -328,7 +355,7 @@ class AttributePostprocessor(postprocessors.Postprocessor):
         self._iterate(root, self._adjust_url)
         self._add_meta(root)
 
-        output = self._markdown.serializer(root)
+        output = self._tohtml(root)
         if self._markdown.stripTopLevelTags:
             try:
                 start = output.index('<%s>' % self._markdown.doc_tag) + len(self._markdown.doc_tag) + 2
