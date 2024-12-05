@@ -40,8 +40,10 @@ class MetaExtension(Extension):
         metapost = MetaPostprocessor(md)
 
         md.registerExtension(self)
-        md.preprocessors.add('meta', metapre, ">normalize_whitespace")
-        md.postprocessors.add('meta', metapost, '_end')
+        #md.preprocessors.add('meta', metapre, ">normalize_whitespace")
+        #md.postprocessors.add('meta', metapost, '_end')
+        md.preprocessors.register(metapre, 'meta', 25)
+        md.postprocessors.register(metapost, 'meta', 0) # bottom priority (end)
 
 
 class MetaPreprocessor(Preprocessor):

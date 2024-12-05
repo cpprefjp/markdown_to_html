@@ -28,7 +28,8 @@ class MathJaxExtension(Extension):
         mathjaxpre = MathJaxPreprocessor(md)
 
         md.registerExtension(self)
-        md.preprocessors.add('mathjax', mathjaxpre, ">normalize_whitespace")
+        #md.preprocessors.add('mathjax', mathjaxpre, ">normalize_whitespace")
+        md.preprocessors.register(mathjaxpre, 'mathjax', 25)
 
 
 class MathJaxPreprocessor(Preprocessor):

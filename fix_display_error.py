@@ -28,7 +28,8 @@ class FixDisplayErrorExtension(Extension):
         pre = FixDisplayErrorPreprocessor(md)
 
         md.registerExtension(self)
-        md.preprocessors.add('fix_display_error', pre, ">normalize_whitespace")
+        #md.preprocessors.add('fix_display_error', pre, ">qualified_fenced_code")
+        md.preprocessors.register(pre, 'fix_display_error', 29)
 
 
 class FixDisplayErrorPreprocessor(Preprocessor):
