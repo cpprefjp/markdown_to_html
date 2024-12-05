@@ -31,18 +31,17 @@ class MarkExtension(Extension):
         markpre = MarkPreprocessor(md)
 
         md.registerExtension(self)
-        md.preprocessors.add('mark', markpre, ">normalize_whitespace")
+        #md.preprocessors.add('mark', markpre, ">normalize_whitespace")
+        md.preprocessors.register(markpre, 'mark', 25)
 
 
 class MarkPreprocessor(Preprocessor):
 
     def __init__(self, md):
         Preprocessor.__init__(self, md)
-        self._markdown = md
 
     def run(self, lines):
         new_lines = []
-        self._markdown._meta_result = {}
         pattern = re.compile("|".join(map(re.escape, MARK_DICT.keys())))
 
         for line in lines:
