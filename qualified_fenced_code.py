@@ -55,7 +55,8 @@ class QualifiedFencedCodeExtension(Extension):
         fenced_block = QualifiedFencedBlockPreprocessor(md, self.global_qualify_list)
         md.registerExtension(self)
 
-        md.preprocessors.add('qualified_fenced_code', fenced_block, ">normalize_whitespace")
+        #md.preprocessors.add('qualified_fenced_code', fenced_block, ">normalize_whitespace")
+        md.preprocessors.register(fenced_block, 'qualified_fenced_code', 28)
 
 
 def _make_random_string():

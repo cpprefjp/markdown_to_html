@@ -80,18 +80,17 @@ class SponsorExtension(Extension):
         pre = SponsorPreprocessor(md)
 
         md.registerExtension(self)
-        md.preprocessors.add('sponsor', pre, ">normalize_whitespace")
+        #md.preprocessors.add('sponsor', pre, ">normalize_whitespace")
+        md.preprocessors.register(pre, 'sponsor', 25)
 
 
 class SponsorPreprocessor(Preprocessor):
 
     def __init__(self, md):
         Preprocessor.__init__(self, md)
-        self._markdown = md
 
     def run(self, lines):
         new_lines = []
-        self._markdown._meta_result = {}
 
         jst = datetime.timezone(datetime.timedelta(hours=+9), 'JST')
         now = datetime.datetime.now(jst)
