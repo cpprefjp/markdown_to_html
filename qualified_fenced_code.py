@@ -41,7 +41,17 @@ from markdown.preprocessors import Preprocessor
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
-QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)(?P<lang_meta>.*?)\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n(?:(?=\n)|(?P<qualifies>.*?\n(?=\s*\n)))', re.MULTILINE | re.DOTALL)
+# qualifier の各行は以下の形式を持つことを要求する。"*" による箇条書きの項目で
+# あり、[meta ...], [mathjax enable ...], [link ...], [color ...], [italic] の
+# 何れかの修飾子が含まれていること。インデントレベルは少なくとも閉じ ``` と同じ
+# であること。
+QUALIFIER_LINE_RE_STRING = r'(?P=indent)\s*\*\s[^\n]*\[(?:meta|mathjax enable|link|color|italic)\b[^\n]*\][^\n]*\n'
+
+# 以下の正規表現は qualifier 行の連続を規定する。最初の qualifier が、閉じ ```
+# と同じレベルの "*" による箇条書きの項目でなければそこで中断する。
+QUALIFIERS_RE_STRING = r'(?:(?!(?P=indent)\*\s)|(?P<qualifies>(?:%s)*))' % QUALIFIER_LINE_RE_STRING
+
+QUALIFIED_FENCED_BLOCK_RE = re.compile(r'(?P<fence>`{3,})[ ]*(?P<lang>[a-zA-Z0-9_+-]*)(?P<lang_meta>.*?)\n(?P<code>.*?)(?<=\n)(?P<indent>[ \t]*)(?P=fence)[ ]*\n' + QUALIFIERS_RE_STRING, re.MULTILINE | re.DOTALL)
 QUALIFY_COMMAND_RE = re.compile(r'\[(.*?)\]')
 INDENT_RE = re.compile(r'^[ \t]+', re.MULTILINE)
 
