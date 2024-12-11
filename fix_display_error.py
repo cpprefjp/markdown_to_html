@@ -15,6 +15,11 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 def is_item_line(line: str) -> bool:
+    if line.startswith("    "):
+        return True
+    if line.startswith("\t"):
+        return True
+
     stripped_line = line.strip()
     m = re.match(r'^([0-9]+\.\s)', stripped_line)
     if m:
