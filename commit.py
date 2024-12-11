@@ -39,7 +39,6 @@ class CommitExtension(Extension):
         pre = CommitPreprocessor(md)
 
         md.registerExtension(self)
-        #md.preprocessors.add('commit', pre, ">normalize_whitespace")
         md.preprocessors.register(pre, 'commit', 25)
 
 

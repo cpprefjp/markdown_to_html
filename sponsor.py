@@ -80,7 +80,6 @@ class SponsorExtension(Extension):
         pre = SponsorPreprocessor(md)
 
         md.registerExtension(self)
-        #md.preprocessors.add('sponsor', pre, ">normalize_whitespace")
         md.preprocessors.register(pre, 'sponsor', 25)
 
 
