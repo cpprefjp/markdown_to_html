@@ -42,32 +42,8 @@ class FixDisplayErrorPreprocessor(Preprocessor):
     def run(self, lines):
         new_lines = []
 
-        in_outer_code_block: bool = False
-        in_code_block: bool = False
         prev_line: str | None = None
         for line in lines:
-            is_outer_code_block = line.strip().startswith("````")
-            if is_outer_code_block:
-                in_outer_code_block = not in_outer_code_block
-                prev_line = line
-                new_lines.append(line)
-                continue
-
-            if not in_outer_code_block:
-                is_code_block = line.strip().startswith("```")
-                if is_code_block:
-                    in_code_block = not in_code_block
-                    if not in_code_block:
-                        is_prev_code_block = True
-                        prev_line = line
-                        new_lines.append(line)
-                        continue
-
-            if in_code_block:
-                prev_line = line
-                new_lines.append(line)
-                continue
-
             if prev_line != None and len(prev_line) > 0:
                 if not is_item_line(prev_line) and is_item_line(line):
                     new_lines.append("")
