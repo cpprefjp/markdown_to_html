@@ -20,7 +20,8 @@ class FooterExtension(markdown.Extension):
         footer = FooterTreeprocessor()
         footer.config = self.getConfigs()
         md.registerExtension(self)
-        md.treeprocessors.add('footer', footer, '_begin')
+        #md.treeprocessors.add('footer', footer, '_begin')
+        md.treeprocessors.register(footer, 'footer', 50) # top priority (begin)
 
 
 class FooterTreeprocessor(markdown.treeprocessors.Treeprocessor):
