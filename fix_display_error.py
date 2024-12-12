@@ -15,11 +15,6 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 def is_item_line(line: str) -> bool:
-    if line.startswith("    "):
-        return True
-    if line.startswith("\t"):
-        return True
-
     stripped_line = line.strip()
     m = re.match(r'^([0-9]+\.\s)', stripped_line)
     if m:
@@ -48,10 +43,20 @@ class FixDisplayErrorPreprocessor(Preprocessor):
         new_lines = []
 
         prev_line: str | None = None
+        in_item: bool = False
         for line in lines:
-            if prev_line != None and len(prev_line) > 0:
-                if not is_item_line(prev_line) and is_item_line(line):
-                    new_lines.append("")
+            if prev_line == None:
+                prev_line = line
+                new_lines.append(line)
+                continue
+
+            if not is_item_line(prev_line) and not in_item and is_item_line(line):
+                new_lines.append("")
+
+            if not in_item and is_item_line(line):
+                in_item = True
+            if in_item and len(line) == 0:
+                in_item = False
 
             prev_line = line
             new_lines.append(line)
