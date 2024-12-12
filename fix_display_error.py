@@ -25,6 +25,13 @@ def is_item_line(line: str) -> bool:
         return True
     return False
 
+def is_item_end_line(line: str) -> bool:
+    if len(line) == 0:
+        return True
+    if re.match(r'^#+ ', line):
+        return True
+    return False
+
 class FixDisplayErrorExtension(Extension):
 
     def extendMarkdown(self, md, md_globals):
@@ -55,7 +62,7 @@ class FixDisplayErrorPreprocessor(Preprocessor):
 
             if not in_item and is_item_line(line):
                 in_item = True
-            if in_item and len(line) == 0:
+            if in_item and is_item_end_line(line):
                 in_item = False
 
             prev_line = line
