@@ -39,18 +39,16 @@ class CommitExtension(Extension):
         pre = CommitPreprocessor(md)
 
         md.registerExtension(self)
-        md.preprocessors.add('commit', pre, ">normalize_whitespace")
+        md.preprocessors.register(pre, 'commit', 25)
 
 
 class CommitPreprocessor(Preprocessor):
 
     def __init__(self, md):
         Preprocessor.__init__(self, md)
-        self._markdown = md
 
     def run(self, lines):
         new_lines = []
-        self._markdown._meta_result = {}
 
         for line in lines:
             new_line = replace_commit_line(line)
